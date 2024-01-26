@@ -38,26 +38,22 @@ export const privilegedTypes = [
 const notificationPruneCutoff = 2592000000; // one month
 
 export async function getAllNotificationTypes() {
-    // The next line calls a function in a module that has not been updated to TS yet
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     const results = await plugins.hooks.fire('filter:user.notificationTypes', {
         types: baseTypes.slice(),
         privilegedTypes: privilegedTypes.slice(),
     });
-    // The next line calls a function in a module that has not been updated to TS yet
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     return results.types.concat(results.privilegedTypes);
 }
 
 export function startJobs() {
     winston.verbose('[notifications.init] Registering jobs.');
     new cron('*/30 * * * *', prune, null, true);
-};
+}
 
 export async function get(nid) {
     const notifications = await getMultiple([nid]);
     return Array.isArray(notifications) && notifications.length ? notifications[0] : null;
-};
+}
 
 export async function getMultiple(nids) {
     if (!Array.isArray(nids) || !nids.length) {
@@ -93,12 +89,12 @@ export async function getMultiple(nids) {
         }
     });
     return notifications;
-};
+}
 
 export async function filterExists(nids) {
     const exists = await db.isSortedSetMembers('notifications', nids);
     return nids.filter((nid, idx) => exists[idx]);
-};
+}
 
 export async function findRelated(mergeIds, set) {
     mergeIds = mergeIds.filter(Boolean);
@@ -113,7 +109,7 @@ export async function findRelated(mergeIds, set) {
     const notificationMergeIds = notificationData.map(notifObj => String(notifObj.mergeId));
     const mergeSet = new Set(mergeIds.map(id => String(id)));
     return nids.filter((nid, idx) => mergeSet.has(notificationMergeIds[idx]));
-};
+}
 
 export async function create(data) {
     if (!data.nid) {
@@ -141,7 +137,7 @@ export async function create(data) {
         db.setObject(`notifications:${data.nid}`, data),
     ]);
     return data;
-};
+}
 
 export async function push(notification, uids) {
     if (!notification || !notification.nid) {
@@ -161,7 +157,7 @@ export async function push(notification, uids) {
             }
         });
     }, 1000);
-};
+}
 
 async function pushToUids(uids, notification) {
     async function sendNotification(uids) {
@@ -262,7 +258,7 @@ export async function pushGroup(notification, groupName) {
     }
     const members = await groups.getMembers(groupName, 0, -1);
     await push(notification, members);
-};
+}
 
 export async function pushGroups(notification, groupNames) {
     if (!notification) {
@@ -271,7 +267,7 @@ export async function pushGroups(notification, groupNames) {
     let groupMembers = await groups.getMembersOfGroups(groupNames);
     groupMembers = _.uniq(_.flatten(groupMembers));
     await push(notification, groupMembers);
-};
+}
 
 export async function rescind(nids) {
     nids = Array.isArray(nids) ? nids : [nids];
@@ -279,14 +275,14 @@ export async function rescind(nids) {
         db.sortedSetRemove('notifications', nids),
         db.deleteAll(nids.map(nid => `notifications:${nid}`)),
     ]);
-};
+}
 
 export async function markRead(nid, uid) {
     if (parseInt(uid, 10) <= 0 || !nid) {
         return;
     }
     await markReadMultiple([nid], uid);
-};
+}
 
 export async function markUnread(nid, uid) {
     if (!(parseInt(uid, 10) > 0) || !nid) {
@@ -302,7 +298,7 @@ export async function markUnread(nid, uid) {
         db.sortedSetRemove(`uid:${uid}:notifications:read`, nid),
         db.sortedSetAdd(`uid:${uid}:notifications:unread`, notification.datetime, nid),
     ]);
-};
+}
 
 export async function markReadMultiple(nids, uid) {
     nids = nids.filter(Boolean);
@@ -327,12 +323,12 @@ export async function markReadMultiple(nids, uid) {
         db.sortedSetRemove(`uid:${uid}:notifications:unread`, nids),
         db.sortedSetAdd(`uid:${uid}:notifications:read`, datetimes, nids),
     ]);
-};
+}
 
 export async function markAllRead(uid) {
     const nids = await db.getSortedSetRevRange(`uid:${uid}:notifications:unread`, 0, 99);
     await markReadMultiple(nids, uid);
-};
+}
 
 export async function prune() {
     const cutoffTime = Date.now() - notificationPruneCutoff;
@@ -356,7 +352,7 @@ export async function prune() {
             winston.error(`Encountered error pruning notifications\n${err.stack}`);
         }
     }
-};
+}
 
 export async function merge(notifications) {
     // When passed a set of notification objects, merge any that can be merged
@@ -443,6 +439,6 @@ export async function merge(notifications) {
         notifications: notifications,
     });
     return data && data.notifications;
-};
+}
 
 // require('./promisify')(Notifications); // HERE

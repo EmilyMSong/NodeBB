@@ -55,17 +55,19 @@ function getAllNotificationTypes() {
             types: exports.baseTypes.slice(),
             privilegedTypes: exports.privilegedTypes.slice(),
         });
+        // The next line calls a function in a module that has not been updated to TS yet
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         return results.types.concat(results.privilegedTypes);
     });
 }
 exports.getAllNotificationTypes = getAllNotificationTypes;
-;
 function startJobs() {
     winston_1.default.verbose('[notifications.init] Registering jobs.');
+    // The next line calls a function in a module that has not been updated to TS yet
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     new cron_1.default('*/30 * * * *', prune, null, true);
 }
 exports.startJobs = startJobs;
-;
 function get(nid) {
     return __awaiter(this, void 0, void 0, function* () {
         const notifications = yield getMultiple([nid]);
@@ -73,7 +75,6 @@ function get(nid) {
     });
 }
 exports.get = get;
-;
 function getMultiple(nids) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!Array.isArray(nids) || !nids.length) {
@@ -108,7 +109,6 @@ function getMultiple(nids) {
     });
 }
 exports.getMultiple = getMultiple;
-;
 function filterExists(nids) {
     return __awaiter(this, void 0, void 0, function* () {
         const exists = yield database_1.default.isSortedSetMembers('notifications', nids);
@@ -116,7 +116,6 @@ function filterExists(nids) {
     });
 }
 exports.filterExists = filterExists;
-;
 function findRelated(mergeIds, set) {
     return __awaiter(this, void 0, void 0, function* () {
         mergeIds = mergeIds.filter(Boolean);
@@ -133,7 +132,6 @@ function findRelated(mergeIds, set) {
     });
 }
 exports.findRelated = findRelated;
-;
 function create(data) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!data.nid) {
@@ -162,7 +160,6 @@ function create(data) {
     });
 }
 exports.create = create;
-;
 function push(notification, uids) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!notification || !notification.nid) {
@@ -184,7 +181,6 @@ function push(notification, uids) {
     });
 }
 exports.push = push;
-;
 function pushToUids(uids, notification) {
     return __awaiter(this, void 0, void 0, function* () {
         function sendNotification(uids) {
@@ -289,7 +285,6 @@ function pushGroup(notification, groupName) {
     });
 }
 exports.pushGroup = pushGroup;
-;
 function pushGroups(notification, groupNames) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!notification) {
@@ -301,7 +296,6 @@ function pushGroups(notification, groupNames) {
     });
 }
 exports.pushGroups = pushGroups;
-;
 function rescind(nids) {
     return __awaiter(this, void 0, void 0, function* () {
         nids = Array.isArray(nids) ? nids : [nids];
@@ -312,7 +306,6 @@ function rescind(nids) {
     });
 }
 exports.rescind = rescind;
-;
 function markRead(nid, uid) {
     return __awaiter(this, void 0, void 0, function* () {
         if (parseInt(uid, 10) <= 0 || !nid) {
@@ -322,7 +315,6 @@ function markRead(nid, uid) {
     });
 }
 exports.markRead = markRead;
-;
 function markUnread(nid, uid) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!(parseInt(uid, 10) > 0) || !nid) {
@@ -340,7 +332,6 @@ function markUnread(nid, uid) {
     });
 }
 exports.markUnread = markUnread;
-;
 function markReadMultiple(nids, uid) {
     return __awaiter(this, void 0, void 0, function* () {
         nids = nids.filter(Boolean);
@@ -364,7 +355,6 @@ function markReadMultiple(nids, uid) {
     });
 }
 exports.markReadMultiple = markReadMultiple;
-;
 function markAllRead(uid) {
     return __awaiter(this, void 0, void 0, function* () {
         const nids = yield database_1.default.getSortedSetRevRange(`uid:${uid}:notifications:unread`, 0, 99);
@@ -372,7 +362,6 @@ function markAllRead(uid) {
     });
 }
 exports.markAllRead = markAllRead;
-;
 function prune() {
     return __awaiter(this, void 0, void 0, function* () {
         const cutoffTime = Date.now() - notificationPruneCutoff;
@@ -399,7 +388,6 @@ function prune() {
     });
 }
 exports.prune = prune;
-;
 function merge(notifications) {
     return __awaiter(this, void 0, void 0, function* () {
         // When passed a set of notification objects, merge any that can be merged
@@ -472,6 +460,8 @@ function merge(notifications) {
             });
             return notifications;
         }, notifications);
+        // The next line calls a function in a module that has not been updated to TS yet
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         const data = yield plugins_1.default.hooks.fire('filter:notifications.merge', {
             notifications: notifications,
         });
@@ -479,5 +469,4 @@ function merge(notifications) {
     });
 }
 exports.merge = merge;
-;
 // require('./promisify')(Notifications); // HERE
